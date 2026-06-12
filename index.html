@@ -436,6 +436,27 @@
   /* Weekly table */
   .weekly-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
+  .weekly-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 18px 14px;
+  }
+
+  .whatsapp-btn {
+    width: 100%;
+    border: none;
+    border-radius: var(--r-sm);
+    background: var(--green);
+    color: white;
+    padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .whatsapp-btn:active { background: #1B4332; }
+
   .weekly-table {
     width: 100%;
     border-collapse: collapse;
@@ -519,6 +540,71 @@
     color: var(--muted);
     font-size: 14px;
   }
+
+  .saved-deliveries {
+    border-top: 1px solid var(--rule);
+    padding: 14px 18px 18px;
+  }
+
+  .saved-deliveries-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .saved-delivery-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .saved-delivery-item:last-child { border-bottom: none; }
+
+  .saved-delivery-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .saved-delivery-main strong {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 3px;
+  }
+
+  .saved-delivery-main span {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .delivery-delete-btn {
+    flex: 0 0 auto;
+    border: 1px solid rgba(176,58,46,0.35);
+    border-radius: var(--r-sm);
+    background: rgba(176,58,46,0.08);
+    color: var(--red);
+    padding: 7px 9px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .delivery-delete-btn:active { background: rgba(176,58,46,0.16); }
+
+  .current-delivery-actions {
+    padding: 0 18px 14px;
+    display: none;
+  }
+
+  .current-delivery-actions.active { display: block; }
 
   /* ── ADMIN STYLES ── */
   .admin-section {
@@ -814,6 +900,9 @@
         <h2>Productos entregados</h2>
       </div>
       <div id="products-list"></div>
+      <div class="current-delivery-actions" id="current-delivery-actions">
+        <button class="delivery-delete-btn" onclick="deleteSelectedEntrega()">Eliminar entrega guardada</button>
+      </div>
     </div>
 
   </div>
@@ -954,6 +1043,37 @@ function saveEntregas() {
   localStorage.setItem('entregas_data', JSON.stringify(entregas));
 }
 
+function getEntregaForSelection() {
+  if (!selectedCafe) return null;
+  return entregas.find(e => e.cafeId === selectedCafe && e.date === regDate) || null;
+}
+
+function deleteEntregaById(id) {
+  const entrega = entregas.find(e => e.id === id);
+  if (!entrega) return;
+
+  const f = formatDisplay(entrega.date);
+  if (!confirm(`¿Eliminar la entrega de ${entrega.cafeName} del ${f.dateFull}?`)) return;
+
+  entregas = entregas.filter(e => e.id !== id);
+  saveEntregas();
+
+  if (selectedCafe === entrega.cafeId && regDate === entrega.date) {
+    quantities = {};
+    renderProducts();
+    updateSaveBtn();
+  }
+
+  renderCafeList();
+  renderWeekly();
+  showToast('✓ Entrega eliminada');
+}
+
+function deleteSelectedEntrega() {
+  const existing = getEntregaForSelection();
+  if (existing) deleteEntregaById(existing.id);
+}
+
 // ── WEEK RANGE ────────────────────────────────────────────────────────────────
 function getWeekRange(offset) {
   const now = new Date();
@@ -1053,7 +1173,10 @@ function renderCafeList() {
 
 function selectCafe(id) {
   selectedCafe = id;
-  quantities = {};
+  const existing = getEntregaForSelection();
+  quantities = existing
+    ? Object.fromEntries(existing.productos.map(p => [p.name, p.qty]))
+    : {};
   renderCafeList();
   renderProducts();
   updateSaveBtn();
@@ -1062,8 +1185,13 @@ function selectCafe(id) {
 function renderProducts() {
   const card = document.getElementById('products-card');
   const list = document.getElementById('products-list');
+  const currentActions = document.getElementById('current-delivery-actions');
 
-  if (!selectedCafe) { card.style.display = 'none'; return; }
+  if (!selectedCafe) {
+    card.style.display = 'none';
+    currentActions.classList.remove('active');
+    return;
+  }
 
   const cafe = cafes.find(c => c.id === selectedCafe);
   if (!cafe || cafe.products.length === 0) {
@@ -1073,6 +1201,7 @@ function renderProducts() {
   }
 
   card.style.display = 'block';
+  currentActions.classList.toggle('active', !!getEntregaForSelection());
   list.innerHTML = cafe.products.map(p => `
     <div class="product-row">
       <span class="product-name">${p}</span>
@@ -1263,11 +1392,11 @@ function renderWeekly() {
     const data = cafeMap[cafeId];
     const products = [...data.products].sort();
 
-    tbody += `<tr class="cafe-group-header"><td colspan="${days.length + 1}">${data.name}</td></tr>`;
+    tbody += `<tr class="cafe-group-header"><td colspan="${days.length + 1}">${escapeHTML(data.name)}</td></tr>`;
 
     for (const p of products) {
       tbody += `<tr>`;
-      tbody += `<td>${p}</td>`;
+      tbody += `<td>${escapeHTML(p)}</td>`;
       for (const d of days) {
         const isToday = d === todayKey;
         const qty = data.days[d]?.[p] ?? 0;
@@ -1280,8 +1409,31 @@ function renderWeekly() {
   }
   tbody += '</tbody>';
 
+  const savedDetails = weekEntregas
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date) || a.cafeName.localeCompare(b.cafeName))
+    .map(e => {
+      const f = formatDisplay(e.date);
+      return `
+        <div class="saved-delivery-item">
+          <div class="saved-delivery-main">
+            <strong>${escapeHTML(e.cafeName)} · ${DAYS_SHORT[f.dow]} ${parseDate(e.date).getDate()}</strong>
+            <span>${escapeHTML(formatEntregaSummary(e))}</span>
+          </div>
+          <button class="delivery-delete-btn" onclick="deleteEntregaById('${e.id}')">Eliminar</button>
+        </div>
+      `;
+    }).join('');
+
   document.getElementById('weekly-content').innerHTML =
-    `<table class="weekly-table">${thead}${tbody}</table>`;
+    `<div class="weekly-actions">
+      <button class="whatsapp-btn" onclick="shareWeeklyWhatsApp()">Enviar reporte por WhatsApp</button>
+    </div>
+    <table class="weekly-table">${thead}${tbody}</table>
+    <div class="saved-deliveries">
+      <div class="saved-deliveries-title">Entregas guardadas</div>
+      ${savedDetails}
+    </div>`;
 }
 
 function changeWeek(dir) {
@@ -1290,12 +1442,68 @@ function changeWeek(dir) {
   renderWeekly();
 }
 
+function formatEntregaSummary(entrega) {
+  return entrega.productos
+    .map(p => `${p.name}: ${p.qty}`)
+    .join(', ');
+}
+
+function buildWeeklyReportText() {
+  const days = getWeekDays(currentWeekOffset);
+  const { mon, sat } = getWeekRange(currentWeekOffset);
+  const weekEntregas = entregas
+    .filter(e => days.includes(e.date))
+    .slice()
+    .sort((a, b) => a.date.localeCompare(b.date) || a.cafeName.localeCompare(b.cafeName));
+
+  if (weekEntregas.length === 0) return '';
+
+  const lines = [
+    `Reporte semanal Panfitrión`,
+    `${mon.getDate()} ${MONTHS[mon.getMonth()]} - ${sat.getDate()} ${MONTHS[sat.getMonth()]} ${sat.getFullYear()}`,
+    ''
+  ];
+
+  let lastDate = '';
+  for (const entrega of weekEntregas) {
+    if (entrega.date !== lastDate) {
+      const f = formatDisplay(entrega.date);
+      lines.push(`${f.dayName} ${parseDate(entrega.date).getDate()} de ${MONTHS[parseDate(entrega.date).getMonth()]}:`);
+      lastDate = entrega.date;
+    }
+
+    lines.push(`- ${entrega.cafeName}: ${formatEntregaSummary(entrega)}`);
+  }
+
+  return lines.join('\n');
+}
+
+function shareWeeklyWhatsApp() {
+  const text = buildWeeklyReportText();
+  if (!text) {
+    showToast('No hay entregas para enviar');
+    return;
+  }
+
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function slugKey(s) {
   return s.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
 }
 function esc(s) {
   return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
 }
 
 // ── ADMIN FUNCTIONS ───────────────────────────────────────────────────────────
