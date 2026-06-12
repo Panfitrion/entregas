@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Entregas — Panfitrión</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink:       #141210;
+    --paper:     #F7F4EF;
+    --paper2:    #EFEBE3;
+    --rule:      #DDD8CF;
+    --muted:     #9A938A;
+    --accent:    #C17F3A;
+    --accent-bg: #FBF0E0;
+    --green:     #2D6A4F;
+    --green-bg:  #E8F5EE;
+    --red:       #B03A2E;
+    --surface:   #FFFFFF;
+    --r:         14px;
+    --r-sm:      8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 100px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    padding: 18px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+
+  .header-left p {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 1px;
+    font-weight: 300;
+    letter-spacing: 0.3px;
+  }
+
+  .week-pill {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--ink);
+    padding: 0 20px 0;
+    gap: 0;
+    border-bottom: 2px solid rgba(255,255,255,0.07);
+  }
+
+  .tab {
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.4);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ── MAIN ── */
+  main { max-width: 600px; margin: 0 auto; padding: 20px 16px; }
+
+  /* ── SECTION CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    border-radius: var(--r);
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-header h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.9px;
+    color: var(--muted);
+  }
+
+  /* ── DATE SELECTOR ── */
+  .date-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    gap: 12px;
+  }
+
+  .date-nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule);
+    background: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .date-nav-btn:active { background: var(--paper2); }
+  .date-nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+  .date-center { flex: 1; text-align: center; }
+  .date-center .day-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--accent);
+    margin-bottom: 2px;
+  }
+  .date-center .date-full {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: -0.3px;
+  }
+
+  .today-btn {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .today-btn:active { background: var(--accent); color: white; }
+
+  /* ── CAFETERIA SELECT ── */
+  .cafe-select-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cafe-option {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .cafe-option:last-child { border-bottom: none; }
+  .cafe-option:active { background: var(--paper); }
+  .cafe-option.selected { background: var(--green-bg); }
+
+  .cafe-option-name {
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  .cafe-option-check {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid var(--rule);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .cafe-option.selected .cafe-option-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+
+  .no-cafes {
+    padding: 32px 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ── PRODUCTS TABLE ── */
+  .products-table {
+    width: 100%;
+  }
+
+  .product-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--rule);
+    gap: 12px;
+  }
+  .product-row:last-child { border-bottom: none; }
+
+  .product-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* ── QTY CONTROL ── */
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--paper);
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .qty-btn {
+    width: 36px; height: 36px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s;
+    line-height: 1;
+  }
+  .qty-btn:active { background: var(--rule); }
+
+  .qty-input {
+    min-width: 50px;
+    flex: 0 0 auto;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    padding: 0 8px;
+    border: none;
+    background: transparent;
+    outline: none;
+  }
+
+  .qty-input::selection {
+    background: var(--accent);
+    color: white;
+  }
+
+  .qty-input.has-value {
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ── CUSTOM NUMERIC KEYBOARD ── */
+  .numeric-keyboard {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 2px solid var(--rule);
+    padding: 6px 8px 8px 8px;
+    z-index: 200;
+    animation: slideUp 0.25s ease;
+    max-height: 45vh;
+    overflow-y: auto;
+  }
+
+  .numeric-keyboard.active {
+    display: block;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .keyboard-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .keyboard-key {
+    width: 100%;
+    aspect-ratio: 1.2;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+  }
+
+  .keyboard-key:active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .keyboard-key.delete {
+    background: rgba(176,58,46,0.1);
+    border-color: var(--red);
+    color: var(--red);
+    font-size: 12px;
+  }
+
+  .keyboard-key.delete:active {
+    background: var(--red);
+    color: white;
+    border-color: var(--red);
+  }
+
+  .keyboard-key.confirm {
+    grid-column: 1 / -1;
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+    font-size: 12px;
+    min-height: 36px;
+  }
+
+  .keyboard-key.confirm:active {
+    background: #1B4332;
+  }
+
+  /* ── SAVE BTN ── */
+  .save-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 14px 20px;
+    background: white;
+    border-top: 1.5px solid var(--rule);
+    z-index: 50;
+  }
+
+  .save-btn {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0 auto;
+    transition: all 0.15s;
+    box-shadow: 0 4px 14px rgba(45,106,79,0.3);
+  }
+  .save-btn:active { transform: scale(0.98); background: #1B4332; }
+  .save-btn:disabled { background: var(--rule); color: var(--muted); box-shadow: none; cursor: default; transform: none; }
+
+  /* ── WEEKLY VIEW ── */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    gap: 10px;
+  }
+
+  .week-label {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    flex: 1;
+    text-align: center;
+  }
+
+  .week-nav-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule);
+    background: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .week-nav-btn:active { background: var(--paper2); }
+
+  /* Weekly table */
+  .weekly-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  .weekly-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 440px;
+  }
+
+  .weekly-table th {
+    padding: 10px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+    background: var(--paper);
+    white-space: nowrap;
+  }
+
+  .weekly-table th:first-child {
+    text-align: left;
+    padding-left: 18px;
+    min-width: 130px;
+    background: var(--paper);
+    position: sticky;
+    left: 0;
+    z-index: 2;
+  }
+
+  .weekly-table th.today-col {
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+
+  .weekly-table td {
+    padding: 10px 8px;
+    text-align: center;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  .weekly-table tr:last-child td { border-bottom: none; }
+
+  .weekly-table td:first-child {
+    text-align: left;
+    padding-left: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 1;
+  }
+
+  .weekly-table tr:nth-child(even) td:first-child { background: #FAFAF9; }
+  .weekly-table tr:nth-child(even) td { background: #FAFAF9; }
+
+  .weekly-table td.today-col { background: var(--accent-bg) !important; }
+
+  .cell-val { font-weight: 600; color: var(--green); }
+  .cell-zero { color: var(--rule); }
+
+  /* Cafe group header */
+  .cafe-group-header td {
+    background: var(--paper2) !important;
+    font-family: 'DM Serif Display', serif !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--ink) !important;
+    padding: 8px 18px !important;
+    border-bottom: 1px solid var(--rule) !important;
+    letter-spacing: -0.2px;
+  }
+
+  .empty-week {
+    padding: 48px 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  /* ── ADMIN STYLES ── */
+  .admin-section {
+    margin-bottom: 24px;
+  }
+
+  .admin-section h2 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--ink);
+    margin-bottom: 14px;
+    margin-left: 2px;
+  }
+
+  .form-group {
+    margin-bottom: 14px;
+  }
+
+  .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--rule);
+    border-radius: var(--r-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--surface);
+    color: var(--ink);
+    transition: border-color 0.15s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .form-btn-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .form-btn {
+    flex: 1;
+    padding: 11px 14px;
+    border: none;
+    border-radius: var(--r-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .form-btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .form-btn-primary:active {
+    background: #A6652A;
+  }
+
+  .form-btn-secondary {
+    background: var(--paper2);
+    color: var(--ink);
+  }
+
+  .form-btn-secondary:active {
+    background: var(--rule);
+  }
+
+  .cafe-item {
+    background: var(--surface);
+    border: 1.5px solid var(--rule);
+    border-radius: var(--r);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .cafe-item-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .cafe-item-info p {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .cafe-item-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .admin-btn {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--rule);
+    border-radius: var(--r-sm);
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    transition: all 0.15s;
+  }
+
+  .admin-btn:active {
+    background: var(--paper);
+  }
+
+  .admin-btn.danger {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .admin-btn.danger:active {
+    background: rgba(176,58,46,0.1);
+  }
+
+  .product-item {
+    background: var(--paper);
+    padding: 10px 14px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .product-item-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .product-delete-btn {
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+
+  .product-delete-btn:active {
+    opacity: 0.6;
+  }
+
+  .collapsible-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--paper2);
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 10px;
+  }
+
+  .collapsible-header:active {
+    background: var(--rule);
+  }
+
+  .collapsible-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .collapsible-toggle {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+
+  .collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+
+  .collapsible-content.open {
+    max-height: 1000px;
+  }
+
+  .collapsible-inner {
+    padding: 0 14px 14px 14px;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 90px; left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    background: var(--ink);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform 0.25s;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── ANIMATIONS ── */
+  .card { animation: fadeUp 0.25s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Entregas</h1>
+    <p>Panfitrión · Registro semanal</p>
+  </div>
+  <div class="week-pill" id="header-week"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('registrar')" id="tab-registrar">Registrar</div>
+  <div class="tab" onclick="switchTab('semana')" id="tab-semana">Semana</div>
+  <div class="tab" onclick="switchTab('admin')" id="tab-admin">Admin</div>
+</div>
+
+<main>
+  <!-- ── REGISTRAR VIEW ── -->
+  <div class="view active" id="view-registrar">
+
+    <!-- Fecha -->
+    <div class="card">
+      <div class="card-header"><h2>Fecha de entrega</h2></div>
+      <div class="date-row">
+        <button class="date-nav-btn" id="reg-prev" onclick="changeRegDate(-1)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="date-center">
+          <div class="day-name" id="reg-dayname"></div>
+          <div class="date-full" id="reg-datefull"></div>
+        </div>
+        <button class="today-btn" onclick="goToday()">Hoy</button>
+        <button class="date-nav-btn" id="reg-next" onclick="changeRegDate(1)">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cafetería -->
+    <div class="card">
+      <div class="card-header"><h2>Cafetería</h2></div>
+      <div class="cafe-select-list" id="cafe-select-list"></div>
+    </div>
+
+    <!-- Productos -->
+    <div class="card" id="products-card" style="display:none">
+      <div class="card-header">
+        <h2>Productos entregados</h2>
+      </div>
+      <div id="products-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ── SEMANA VIEW ── -->
+  <div class="view" id="view-semana">
+    <div class="card">
+      <div class="week-nav">
+        <button class="week-nav-btn" onclick="changeWeek(-1)">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <div class="week-label" id="week-label"></div>
+        <button class="week-nav-btn" onclick="changeWeek(1)" id="week-next-btn">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="weekly-wrap">
+        <div id="weekly-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN VIEW ── -->
+  <div class="view" id="view-admin">
+    <!-- Cafeterías Section -->
+    <div class="admin-section">
+      <h2>Cafeterías</h2>
+      <div class="card">
+        <div class="card-header"><h2 style="margin:0">Nueva cafetería</h2></div>
+        <div style="padding: 18px; border-bottom: 1px solid var(--rule);">
+          <div class="form-group">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-input" id="cafe-name-input" placeholder="Ej: Café Central">
+          </div>
+          <div class="form-btn-group">
+            <button class="form-btn form-btn-primary" onclick="addCafe()">Agregar</button>
+            <button class="form-btn form-btn-secondary" onclick="clearCafeForm()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="cafes-list"></div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Save bar (only on registrar view) -->
+<div class="save-bar" id="save-bar">
+  <button class="save-btn" id="save-btn" onclick="saveEntrega()" disabled>
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+    Guardar entrega
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Custom Numeric Keyboard -->
+<div class="numeric-keyboard" id="numeric-keyboard">
+  <div class="keyboard-grid">
+    <button class="keyboard-key" onclick="keyboardInput('1')">1</button>
+    <button class="keyboard-key" onclick="keyboardInput('2')">2</button>
+    <button class="keyboard-key" onclick="keyboardInput('3')">3</button>
+    <button class="keyboard-key delete" onclick="keyboardBackspace()">⌫</button>
+    <button class="keyboard-key" onclick="keyboardInput('4')">4</button>
+    <button class="keyboard-key" onclick="keyboardInput('5')">5</button>
+    <button class="keyboard-key" onclick="keyboardInput('6')">6</button>
+    <button class="keyboard-key delete" onclick="keyboardClear()">C</button>
+    <button class="keyboard-key" onclick="keyboardInput('7')">7</button>
+    <button class="keyboard-key" onclick="keyboardInput('8')">8</button>
+    <button class="keyboard-key" onclick="keyboardInput('9')">9</button>
+    <button class="keyboard-key" onclick="keyboardInput('0')">0</button>
+    <button class="keyboard-key confirm" onclick="keyboardConfirm()">✓ OK</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const DAYS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DAYS_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let cafes        = JSON.parse(localStorage.getItem('pedidos_cafes') || '[]');
+let entregas     = JSON.parse(localStorage.getItem('entregas_data') || '[]');
+// cafes: [{ id, name, products: [name, name, ...] }]
+// entregas: [{ id, cafeId, cafeName, date: 'YYYY-MM-DD', productos: [{name, qty}] }]
+
+let regDate      = today();
+let selectedCafe = null;
+let quantities   = {}; // { productName: qty }
+let currentWeekOffset = 0; // 0 = this week
+
+// Admin state
+let adminExpandedCafe = null;
+let adminNewProduct = {}; // { cafeId: productName }
+
+// Keyboard state
+let keyboardActiveInput = null;
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function today() {
+  const d = new Date();
+  return dateKey(d);
+}
+
+function dateKey(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
+function parseDate(key) {
+  const [y,m,d] = key.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function formatDisplay(key) {
+  const d = parseDate(key);
+  return {
+    dayName: DAYS[d.getDay()],
+    dateFull: `${d.getDate()} de ${MONTHS[d.getMonth()]}`,
+    year: d.getFullYear(),
+    dow: d.getDay()
+  };
+}
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function saveEntregas() {
+  localStorage.setItem('entregas_data', JSON.stringify(entregas));
+}
+
+// ── WEEK RANGE ────────────────────────────────────────────────────────────────
+function getWeekRange(offset) {
+  const now = new Date();
+  // Monday of current week
+  const dow = now.getDay(); // 0=Sun
+  const diffToMon = (dow === 0) ? -6 : 1 - dow;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() + diffToMon + offset * 7);
+  mon.setHours(0,0,0,0);
+  const sat = new Date(mon);
+  sat.setDate(mon.getDate() + 5);
+  return { mon, sat };
+}
+
+function getWeekDays(offset) {
+  const { mon } = getWeekRange(offset);
+  const days = [];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    days.push(dateKey(d));
+  }
+  return days; // Lun–Sáb
+}
+
+// ── HEADER WEEK PILL ──────────────────────────────────────────────────────────
+function updateHeaderWeek() {
+  const { mon, sat } = getWeekRange(0);
+  document.getElementById('header-week').textContent =
+    `${mon.getDate()} ${MONTHS[mon.getMonth()].slice(0,3)} – ${sat.getDate()} ${MONTHS[sat.getMonth()].slice(0,3)}`;
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  closeKeyboard();
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('save-bar').style.display = name === 'registrar' ? 'block' : 'none';
+  if (name === 'semana') renderWeekly();
+  if (name === 'admin') renderAdmin();
+}
+
+// ── REGISTRAR VIEW ────────────────────────────────────────────────────────────
+function renderRegDate() {
+  const f = formatDisplay(regDate);
+  document.getElementById('reg-dayname').textContent = f.dayName;
+  document.getElementById('reg-datefull').textContent = f.dateFull;
+
+  // Disable next if today
+  document.getElementById('reg-next').disabled = regDate >= today();
+  // Disable prev if 30 days ago
+  const minDate = new Date(); minDate.setDate(minDate.getDate() - 30);
+  document.getElementById('reg-prev').disabled = parseDate(regDate) <= minDate;
+}
+
+function changeRegDate(dir) {
+  const d = parseDate(regDate);
+  d.setDate(d.getDate() + dir);
+  // Skip Sunday
+  if (d.getDay() === 0) d.setDate(d.getDate() + dir);
+  regDate = dateKey(d);
+  renderRegDate();
+  selectedCafe = null;
+  quantities = {};
+  renderCafeList();
+  renderProducts();
+  updateSaveBtn();
+}
+
+function goToday() {
+  regDate = today();
+  renderRegDate();
+  selectedCafe = null;
+  quantities = {};
+  renderCafeList();
+  renderProducts();
+  updateSaveBtn();
+}
+
+function renderCafeList() {
+  const el = document.getElementById('cafe-select-list');
+  if (cafes.length === 0) {
+    el.innerHTML = `<div class="no-cafes">No hay cafeterías registradas en el admin.</div>`;
+    return;
+  }
+  el.innerHTML = cafes.map(c => `
+    <div class="cafe-option ${selectedCafe === c.id ? 'selected' : ''}" onclick="selectCafe('${c.id}')">
+      <span class="cafe-option-name">${c.name}</span>
+      <div class="cafe-option-check">
+        ${selectedCafe === c.id ? `<svg width="12" height="12" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectCafe(id) {
+  selectedCafe = id;
+  quantities = {};
+  renderCafeList();
+  renderProducts();
+  updateSaveBtn();
+}
+
+function renderProducts() {
+  const card = document.getElementById('products-card');
+  const list = document.getElementById('products-list');
+
+  if (!selectedCafe) { card.style.display = 'none'; return; }
+
+  const cafe = cafes.find(c => c.id === selectedCafe);
+  if (!cafe || cafe.products.length === 0) {
+    card.style.display = 'block';
+    list.innerHTML = `<div class="no-cafes">Esta cafetería no tiene productos.</div>`;
+    return;
+  }
+
+  card.style.display = 'block';
+  list.innerHTML = cafe.products.map(p => `
+    <div class="product-row">
+      <span class="product-name">${p}</span>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty('${esc(p)}', -1)">−</button>
+        <input type="text" inputmode="none" class="qty-input ${(quantities[p]||0) > 0 ? 'has-value' : ''}" id="qn-${slugKey(p)}" value="${quantities[p] || 0}" onfocus="openKeyboard(this, '${esc(p)}')" readonly>
+        <button class="qty-btn" onclick="changeQty('${esc(p)}', 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQty(product, delta) {
+  const current = quantities[product] || 0;
+  const next = Math.max(0, Math.min(999, current + delta));
+  quantities[product] = next;
+  const el = document.getElementById('qn-' + slugKey(product));
+  if (el) {
+    el.value = next;
+    el.className = 'qty-input' + (next > 0 ? ' has-value' : '');
+  }
+  updateSaveBtn();
+}
+
+function updateQtyFromInput(product, input) {
+  let val = parseInt(input.value) || 0;
+  val = Math.max(0, Math.min(999, val));
+  quantities[product] = val;
+  input.value = val;
+  input.className = 'qty-input' + (val > 0 ? ' has-value' : '');
+  updateSaveBtn();
+}
+
+function updateQtyInputStyle(product, input) {
+  const val = parseInt(input.value) || 0;
+  input.className = 'qty-input' + (val > 0 ? ' has-value' : '');
+}
+
+// ── NUMERIC KEYBOARD ──────────────────────────────────────────────────────────
+function openKeyboard(inputEl, product) {
+  keyboardActiveInput = { inputEl, product };
+  document.getElementById('numeric-keyboard').classList.add('active');
+  // Scroll into view
+  setTimeout(() => {
+    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+function closeKeyboard() {
+  document.getElementById('numeric-keyboard').classList.remove('active');
+  keyboardActiveInput = null;
+}
+
+function keyboardInput(digit) {
+  if (!keyboardActiveInput) return;
+  const { inputEl } = keyboardActiveInput;
+  let val = inputEl.value;
+  if (val === '0') val = digit;
+  else if (val.length < 3) val += digit;
+  const num = Math.min(999, parseInt(val) || 0);
+  inputEl.value = num;
+  inputEl.className = 'qty-input' + (num > 0 ? ' has-value' : '');
+}
+
+function keyboardBackspace() {
+  if (!keyboardActiveInput) return;
+  const { inputEl } = keyboardActiveInput;
+  let val = inputEl.value;
+  val = val.slice(0, -1) || '0';
+  inputEl.value = val;
+  inputEl.className = 'qty-input' + (val !== '0' && val ? ' has-value' : '');
+}
+
+function keyboardClear() {
+  if (!keyboardActiveInput) return;
+  const { inputEl } = keyboardActiveInput;
+  inputEl.value = '0';
+  inputEl.className = 'qty-input';
+}
+
+function keyboardConfirm() {
+  if (!keyboardActiveInput) return;
+  const { inputEl, product } = keyboardActiveInput;
+  const num = Math.max(0, Math.min(999, parseInt(inputEl.value) || 0));
+  quantities[product] = num;
+  inputEl.value = num;
+  inputEl.className = 'qty-input' + (num > 0 ? ' has-value' : '');
+  updateSaveBtn();
+  closeKeyboard();
+}
+
+function updateSaveBtn() {
+  const hasQty = Object.values(quantities).some(v => v > 0);
+  document.getElementById('save-btn').disabled = !selectedCafe || !hasQty;
+}
+
+function saveEntrega() {
+  const cafe = cafes.find(c => c.id === selectedCafe);
+  if (!cafe) return;
+
+  const productos = Object.entries(quantities)
+    .filter(([,q]) => q > 0)
+    .map(([name, qty]) => ({ name, qty }));
+
+  if (productos.length === 0) return;
+
+  // Check if already exists for same cafe+date, update it
+  const existingIdx = entregas.findIndex(e => e.cafeId === selectedCafe && e.date === regDate);
+  if (existingIdx >= 0) {
+    entregas[existingIdx].productos = productos;
+    entregas[existingIdx].updatedAt = Date.now();
+  } else {
+    entregas.push({
+      id: uid(),
+      cafeId: selectedCafe,
+      cafeName: cafe.name,
+      date: regDate,
+      productos,
+      createdAt: Date.now()
+    });
+  }
+
+  saveEntregas();
+  showToast(`✓ Entrega guardada — ${cafe.name}`);
+
+  // Reset
+  selectedCafe = null;
+  quantities = {};
+  renderCafeList();
+  renderProducts();
+  updateSaveBtn();
+}
+
+// ── WEEKLY VIEW ───────────────────────────────────────────────────────────────
+function renderWeekly() {
+  const days = getWeekDays(currentWeekOffset);
+  const { mon, sat } = getWeekRange(currentWeekOffset);
+
+  // Week label
+  document.getElementById('week-label').textContent =
+    `${mon.getDate()} ${MONTHS[mon.getMonth()].slice(0,3)} – ${sat.getDate()} ${MONTHS[sat.getMonth()].slice(0,3)} ${sat.getFullYear()}`;
+
+  // Disable next if this week or future
+  document.getElementById('week-next-btn').disabled = currentWeekOffset >= 0;
+
+  const todayKey = today();
+
+  // Collect cafes that have deliveries this week
+  const weekEntregas = entregas.filter(e => days.includes(e.date));
+
+  if (weekEntregas.length === 0) {
+    document.getElementById('weekly-content').innerHTML =
+      `<div class="empty-week">Sin entregas registradas esta semana.</div>`;
+    return;
+  }
+
+  // Group by cafe
+  const cafesWithData = [...new Set(weekEntregas.map(e => e.cafeId))];
+  // Get all products across the week per cafe
+  const cafeMap = {}; // cafeId → { name, products: Set, days: {date: {product: qty}} }
+
+  for (const e of weekEntregas) {
+    if (!cafeMap[e.cafeId]) {
+      cafeMap[e.cafeId] = { name: e.cafeName, products: new Set(), days: {} };
+    }
+    cafeMap[e.cafeId].days[e.date] = {};
+    for (const p of e.productos) {
+      cafeMap[e.cafeId].products.add(p.name);
+      cafeMap[e.cafeId].days[e.date][p.name] = p.qty;
+    }
+  }
+
+  const thead = `
+    <thead>
+      <tr>
+        <th>Producto</th>
+        ${days.map(d => {
+          const dd = parseDate(d);
+          const isToday = d === todayKey;
+          return `<th class="${isToday ? 'today-col' : ''}">${DAYS_SHORT[dd.getDay()]}<br><span style="font-size:10px;font-weight:400">${dd.getDate()}</span></th>`;
+        }).join('')}
+      </tr>
+    </thead>
+  `;
+
+  let tbody = '<tbody>';
+  for (const cafeId of cafesWithData) {
+    const data = cafeMap[cafeId];
+    const products = [...data.products].sort();
+
+    tbody += `<tr class="cafe-group-header"><td colspan="${days.length + 1}">${data.name}</td></tr>`;
+
+    for (const p of products) {
+      tbody += `<tr>`;
+      tbody += `<td>${p}</td>`;
+      for (const d of days) {
+        const isToday = d === todayKey;
+        const qty = data.days[d]?.[p] ?? 0;
+        tbody += `<td class="${isToday ? 'today-col' : ''}">
+          ${qty > 0 ? `<span class="cell-val">${qty}</span>` : `<span class="cell-zero">—</span>`}
+        </td>`;
+      }
+      tbody += `</tr>`;
+    }
+  }
+  tbody += '</tbody>';
+
+  document.getElementById('weekly-content').innerHTML =
+    `<table class="weekly-table">${thead}${tbody}</table>`;
+}
+
+function changeWeek(dir) {
+  currentWeekOffset += dir;
+  if (currentWeekOffset > 0) currentWeekOffset = 0;
+  renderWeekly();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function slugKey(s) {
+  return s.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 30);
+}
+function esc(s) {
+  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+// ── ADMIN FUNCTIONS ───────────────────────────────────────────────────────────
+function saveCafes() {
+  localStorage.setItem('pedidos_cafes', JSON.stringify(cafes));
+}
+
+function addCafe() {
+  const input = document.getElementById('cafe-name-input');
+  const name = input.value.trim();
+  if (!name) {
+    showToast('Por favor ingresa un nombre');
+    return;
+  }
+  
+  if (cafes.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    showToast('Esta cafetería ya existe');
+    return;
+  }
+
+  cafes.push({
+    id: uid(),
+    name: name,
+    products: []
+  });
+
+  saveCafes();
+  clearCafeForm();
+  renderAdmin();
+  renderCafeList();
+  showToast(`✓ Cafetería "${name}" agregada`);
+}
+
+function clearCafeForm() {
+  document.getElementById('cafe-name-input').value = '';
+}
+
+function deleteCafe(cafeId) {
+  if (!confirm('¿Eliminar esta cafetería?')) return;
+
+  cafes = cafes.filter(c => c.id !== cafeId);
+  entregas = entregas.filter(e => e.cafeId !== cafeId);
+
+  saveCafes();
+  saveEntregas();
+  renderAdmin();
+  renderCafeList();
+  showToast('✓ Cafetería eliminada');
+}
+
+function toggleCafeExpand(cafeId) {
+  adminExpandedCafe = adminExpandedCafe === cafeId ? null : cafeId;
+  renderAdmin();
+}
+
+function addProduct(cafeId) {
+  const input = document.getElementById(`product-input-${cafeId}`);
+  const product = input.value.trim();
+  
+  if (!product) {
+    showToast('Por favor ingresa un producto');
+    return;
+  }
+
+  const cafe = cafes.find(c => c.id === cafeId);
+  if (!cafe) return;
+
+  if (cafe.products.includes(product)) {
+    showToast('Este producto ya existe en la cafetería');
+    return;
+  }
+
+  cafe.products.push(product);
+  saveCafes();
+  input.value = '';
+  renderAdmin();
+  showToast(`✓ Producto "${product}" agregado`);
+}
+
+function deleteProduct(cafeId, product) {
+  const cafe = cafes.find(c => c.id === cafeId);
+  if (!cafe) return;
+
+  cafe.products = cafe.products.filter(p => p !== product);
+  saveCafes();
+  renderAdmin();
+  showToast(`✓ Producto eliminado`);
+}
+
+function renderAdmin() {
+  const container = document.getElementById('cafes-list');
+  
+  if (cafes.length === 0) {
+    container.innerHTML = `
+      <div class="card">
+        <div style="padding: 48px 18px; text-align: center; color: var(--muted); font-size: 14px;">
+          Aún no hay cafeterías. Agrega una arriba.
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = cafes.map(cafe => {
+    const isExpanded = adminExpandedCafe === cafe.id;
+    return `
+      <div class="card" style="margin-bottom: 14px;">
+        <div class="collapsible-header" onclick="toggleCafeExpand('${cafe.id}')">
+          <h3>${cafe.name}</h3>
+          <div class="collapsible-toggle" style="transform: rotate(${isExpanded ? 180 : 0}deg);">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+        </div>
+        
+        <div class="collapsible-content ${isExpanded ? 'open' : ''}">
+          <div class="collapsible-inner">
+            ${cafe.products.length === 0 ? `
+              <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">Sin productos aún</p>
+            ` : `
+              ${cafe.products.map(p => `
+                <div class="product-item">
+                  <span>${p}</span>
+                  <div class="product-item-actions">
+                    <button class="product-delete-btn" onclick="deleteProduct('${cafe.id}', '${esc(p)}')">✕</button>
+                  </div>
+                </div>
+              `).join('')}
+              <div style="height: 8px;"></div>
+            `}
+            
+            <div class="form-group">
+              <label class="form-label">Nuevo producto</label>
+              <input type="text" class="form-input" id="product-input-${cafe.id}" placeholder="Ej: Café con leche" onkeypress="if(event.key==='Enter')addProduct('${cafe.id}')">
+            </div>
+            <div class="form-btn-group">
+              <button class="form-btn form-btn-primary" onclick="addProduct('${cafe.id}')">Agregar</button>
+              <button class="form-btn form-btn-danger" onclick="deleteCafe('${cafe.id}')" style="background: rgba(176,58,46,0.1); color: var(--red);">Eliminar café</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateHeaderWeek();
+renderRegDate();
+renderCafeList();
+renderAdmin();
+</script>
+</body>
+</html>
